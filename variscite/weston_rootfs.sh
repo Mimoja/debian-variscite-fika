@@ -739,6 +739,9 @@ EOF
 	chmod +x header-stage
 	chroot ${ROOTFS_BASE} /header-stage
 
+	cp ${G_VARISCITE_PATH}/../meticulous-ui.deb ${ROOTFS_BASE}/tmp/meticulous-ui.deb
+	G_USER_PACKAGES="${G_USER_PACKAGES} /tmp/meticulous-ui.deb"
+
 	#Install user pacakges if any
 	if [ "${G_USER_PACKAGES}" != "" ] ; then
 		pr_info "rootfs: install user defined packages (user-stage)"
