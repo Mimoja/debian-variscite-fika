@@ -28,51 +28,11 @@ BOOTDIR=/boot
 
 check_board()
 {
-	if grep -q "i.MX8MM" /sys/devices/soc0/soc_id; then
-		BOARD=imx8mm-var-dart
-		DTB_PREFIX=fsl-imx8mm-var-dart
-		BLOCK=mmcblk2
-	elif grep -q "i.MX8MN" /sys/devices/soc0/soc_id; then
+	if grep -q "i.MX8MN" /sys/devices/soc0/soc_id; then
 		BOARD=imx8mn-var-som
 		DTB_PREFIX=fsl-imx8mn-var-som
 		BOOTLOADER_OFFSET=32
 		BLOCK=mmcblk2
-	elif grep -q "i.MX8MQ" /sys/devices/soc0/soc_id; then
-		BOARD=imx8mq-var-dart
-		DTB_PREFIX=imx8mq-var-dart-dt8mcustomboard
-		BLOCK=mmcblk0
-		if [[ $DISPLAY != "lvds" && $DISPLAY != "hdmi" && \
-		    $DISPLAY != "dp" && $DISPLAY != "lvds-dp" && $DISPLAY != "lvds-hdmi" ]]; then
-			red_bold_echo "ERROR: invalid display, should be lvds, hdmi, dp, lvds-dp or lvds-hdmi"
-			exit 1
-		fi
-	elif grep -q "i.MX8MP" /sys/devices/soc0/soc_id; then
-		BOARD=imx8mp-var-dart
-		DTB_PREFIX=imx8mp-var-dart-dt8mcustomboard
-		BOOTLOADER_OFFSET=32
-		BLOCK=mmcblk2
-	elif grep -q "i.MX8QXP" /sys/devices/soc0/soc_id; then
-		BOARD=imx8qxp-var-som
-		DTB_PREFIX=imx8qxp-var-som-symphony
-		BOOTLOADER_OFFSET=32
-		BLOCK=mmcblk0
-
-		if [[ $DISPLAY != "lvds" && $DISPLAY != "hdmi" && \
-		      $DISPLAY != "dual-display" ]]; then
-			red_bold_echo "ERROR: invalid display, should be lvds, hdmi or dual-display"
-			exit 1
-		fi
-	elif grep -q "i.MX8QM" /sys/devices/soc0/soc_id; then
-		BOARD=imx8qm-var-som
-		DTB_PREFIX=imx8qm-var-som
-		BOOTLOADER_OFFSET=32
-		BLOCK=mmcblk0
-
-		if [[ $DISPLAY != "lvds" && $DISPLAY != "hdmi" && \
-		      $DISPLAY != "dp" ]]; then
-			red_bold_echo "ERROR: invalid display, should be lvds, hdmi or dp"
-			exit 1
-		fi
 	else
 		red_bold_echo "ERROR: Unsupported board"
 		exit 1
@@ -167,30 +127,6 @@ install_rootfs_to_emmc()
 	printf "Extracting files"
 	tar --warning=no-timestamp -xpf ${IMGS_PATH}/${ROOTFS_IMAGE} -C ${MOUNTDIR} --checkpoint=.1200
 
-	if [[ ${BOARD} = "imx8mq-var-dart" ]]; then
-		# Create DTB symlink
-		# Create DTB symlinks
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs ${DTB_PREFIX}-wifi-${DISPLAY}.dtb ${DTB_PREFIX}.dtb)
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs ${DTB_PREFIX}-legacy-wifi-${DISPLAY}.dtb ${DTB_PREFIX}-legacy.dtb)
-		# Update blacklist.conf
-		if [ -f ${MOUNTDIR}/etc/modprobe.d/blacklist.conf ]; then
-			echo "blacklist fec" >> ${MOUNTDIR}/etc/modprobe.d/blacklist.conf
-		fi
-	fi
-
-	if [[ ${BOARD} = "imx8qxp-var-som" ]]; then
-		# Create DTB symlink
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs ${DTB_PREFIX}-wifi.dtb ${DTB_PREFIX}.dtb)
-	fi
-
-	if [[ ${BOARD} = "imx8qm-var-som" ]]; then
-		# Create DTB symlinks
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs ${DTB_PREFIX}-${DISPLAY}.dtb ${DTB_PREFIX}.dtb)
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs imx8qm-var-spear-${DISPLAY}.dtb imx8qm-var-spear.dtb)
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs imx8qp-var-som-${DISPLAY}.dtb imx8qp-var-som.dtb)
-		(cd ${MOUNTDIR}/${BOOTDIR}; ln -fs imx8qp-var-spear-${DISPLAY}.dtb imx8qp-var-spear.dtb)
-	fi
-
 	# Adjust u-boot-fw-utils for eMMC on the installed rootfs
 	if [ -f ${MOUNTDIR}/etc/fw_env.config ]; then
 		sed -i "s/\/dev\/mmcblk./\/dev\/${BLOCK}/" ${MOUNTDIR}/etc/fw_env.config
@@ -227,11 +163,6 @@ usage()
 	echo
 	echo " options:"
 	echo " -h                           show help message"
-	if grep -q "i.MX8QM" /sys/devices/soc0/soc_id; then
-		echo " -d <lvds|hdmi|dp>            set display type, default is lvds"
-	elif grep -q "i.MX8MQ" /sys/devices/soc0/soc_id; then
-		echo " -d <lvds|hdmi|dp|lvds-dp|lvds-hdmi>  set display type, default is lvds"
-	fi
 	echo
 }
 

@@ -51,7 +51,7 @@ readonly G_CROSS_COMPILER_32BIT_PREFIX="arm-linux-gnueabihf-"
 readonly G_CROSS_COMPILER_JOPTION="-j 4"
 
 #### user rootfs packages ####
-readonly G_USER_PACKAGES=""
+declare -g G_USER_PACKAGES=""
 
 export LC_ALL=C
 
@@ -62,6 +62,7 @@ PARAM_CMD="all"
 PARAM_BLOCK_DEVICE="na"
 
 IS_QXP_B0=false
+export MACHINE=imx8mn-var-som
 
 ### usage ###
 function usage()
@@ -69,7 +70,7 @@ function usage()
 	echo "Make Debian ${DEB_RELEASE} image and create a bootabled SD card"
 	echo
 	echo "Usage:"
-	echo " MACHINE=<imx8mq-var-dart|imx8mm-var-dart|imx8mp-var-dart|imx8qxp-var-som|imx8qxpb0-var-som|imx8qm-var-som|imx8mn-var-som|imx6ul-var-dart|var-som-mx7> ./${SCRIPT_NAME} options"
+	echo "./${SCRIPT_NAME} options"
 	echo
 	echo "Options:"
 	echo "  -h|--help   -- print this help"
@@ -99,10 +100,6 @@ function usage()
 	echo
 }
 
-if [ "${MACHINE}" = "imx8qxpb0-var-som" ]; then
-	MACHINE="imx8qxp-var-som"
-	IS_QXP_B0=true
-fi
 
 if [ ! -e ${G_VARISCITE_PATH}/${MACHINE}/${MACHINE}.sh ]; then
 	echo "Illegal MACHINE: ${MACHINE}"
@@ -507,239 +504,36 @@ function make_uboot()
 
 	cp ${1}/tools/env/fw_printenv ${2}
 
-	if [ "${MACHINE}" = "imx8qxp-var-som" ]; then
-		if [ "${IS_QXP_B0}" = true ]; then
-			#Compile B0 bootloader
-
-			# scfw
-			make_imx_sc_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QX/"
-			# imx-atf
-			cd ${DEF_SRC_DIR}/imx-atf
-			LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-					PLAT=imx8qx bl31
-			cd -
-			cp ${DEF_SRC_DIR}/imx-atf/build/imx8qx/release/bl31.bin \
-				src/imx-mkimage/iMX8QX/bl31.bin
-			# imx-seco
-			make_imx_seco_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QX/"
-
-			cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/
-			cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/
-			cd ${DEF_SRC_DIR}/imx-mkimage
-			make REV=B0 SOC=iMX8QX flash_spl
-			cp ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/flash.bin \
-				${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-			cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-		else
-			#Compile C0 bootloader
-
-			# scfw
-			make_imx_sc_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QX/"
-			# imx-atf
-			cd ${DEF_SRC_DIR}/imx-atf
-			LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-					PLAT=imx8qx bl31
-			cd -
-			cp ${DEF_SRC_DIR}/imx-atf/build/imx8qx/release/bl31.bin \
-				src/imx-mkimage/iMX8QX/bl31.bin
-			# imx-seco
-			make_imx_seco_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QX/"
-
-			cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/
-			cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/
-			cd ${DEF_SRC_DIR}/imx-mkimage
-			make REV=C0 SOC=iMX8QX flash_spl
-			cp ${DEF_SRC_DIR}/imx-mkimage/iMX8QX/flash.bin \
-				${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-			cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-		fi
-	elif [ "${MACHINE}" = "imx8mq-var-dart" ]; then
-		cd ${DEF_SRC_DIR}/imx-atf
-		LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-				PLAT=imx8mq bl31
-		cd -
-		cp ${DEF_SRC_DIR}/imx-atf/build/imx8mq/release/bl31.bin \
-			${DEF_SRC_DIR}/imx-mkimage/iMX8M/bl31.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/signed_hdmi_imx8m.bin \
-			src/imx-mkimage/iMX8M/signed_hdmi_imx8m.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/signed_dp_imx8m.bin \
-			src/imx-mkimage/iMX8M/signed_dp_imx8m.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_imem.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_1d_imem.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_dmem.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_1d_dmem.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_imem.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_2d_imem.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_dmem.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_2d_dmem.bin
-		cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/u-boot-nodtb.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/tools/mkimage ${DEF_SRC_DIR}/imx-mkimage/iMX8M/mkimage_uboot
-		cd ${DEF_SRC_DIR}/imx-mkimage
-		make SOC=iMX8MQ dtbs=${UBOOT_DTB} flash_evk
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-		make SOC=iMX8M clean
-		cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		make SOC=iMX8M dtbs=${UBOOT_DTB} flash_dp_evk
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC_DP}
-		cp ${G_UBOOT_NAME_FOR_EMMC_DP} ${2}/${G_UBOOT_NAME_FOR_EMMC_DP}
-	elif [ "${MACHINE}" = "imx8mm-var-dart" ]; then
-		cd ${DEF_SRC_DIR}/imx-atf
-		LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-				PLAT=imx8mm bl31
-		cd -
-		cp ${DEF_SRC_DIR}/imx-atf/build/imx8mm/release/bl31.bin \
-			${DEF_SRC_DIR}/imx-mkimage/iMX8M/bl31.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_1d.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_2d.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_1d.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_2d.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_dmem.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_imem.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_dmem.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_imem.bin \
-			src/imx-mkimage/iMX8M/
-		cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/u-boot-nodtb.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		if [ ! -z "${UBOOT_DTB_EXTRA}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		if [ ! -z "${UBOOT_DTB_EXTRA2}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA2} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		cp ${1}/tools/mkimage ${DEF_SRC_DIR}/imx-mkimage/iMX8M/mkimage_uboot
-		cd ${DEF_SRC_DIR}/imx-mkimage
-		make SOC=iMX8MM dtbs=${UBOOT_DTB} flash_lpddr4_ddr4_evk
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-	elif [ "${MACHINE}" = "imx8mp-var-dart" ]; then
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/bl31-imx8mp.bin \
-			src/imx-mkimage/iMX8M/bl31.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_dmem_202006.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_1d_dmem_202006.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_1d_imem_202006.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_1d_imem_202006.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_dmem_202006.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_2d_dmem_202006.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/lpddr4_pmu_train_2d_imem_202006.bin \
-			src/imx-mkimage/iMX8M/lpddr4_pmu_train_2d_imem_202006.bin
-		cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/u-boot-nodtb.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		if [ ! -z "${UBOOT_DTB_EXTRA}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		if [ ! -z "${UBOOT_DTB_EXTRA2}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA2} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		cp ${1}/tools/mkimage ${DEF_SRC_DIR}/imx-mkimage/iMX8M/mkimage_uboot
-		cd ${DEF_SRC_DIR}/imx-mkimage
-		make SOC=iMX8MP flash_evk
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-	elif [ "${MACHINE}" = "imx8mn-var-som" ]; then
-		cd ${DEF_SRC_DIR}/imx-atf
-		LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-				PLAT=imx8mn bl31
-		cd -
-		cp ${DEF_SRC_DIR}/imx-atf/build/imx8mn/release/bl31.bin \
-			src/imx-mkimage/iMX8M/bl31.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_1d_201810.bin \
-			src/imx-mkimage/iMX8M/ddr4_imem_1d_201810.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_1d_201810.bin \
-			src/imx-mkimage/iMX8M/ddr4_dmem_1d_201810.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_2d_201810.bin \
-			src/imx-mkimage/iMX8M/ddr4_imem_2d_201810.bin
-		cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_2d_201810.bin \
-			src/imx-mkimage/iMX8M/ddr4_dmem_2d_201810.bin
-		cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/u-boot-nodtb.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		if [ ! -z "${UBOOT_DTB_EXTRA}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		if [ ! -z "${UBOOT_DTB_EXTRA2}" ]; then
-			cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA2} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
-		fi
-		cp ${1}/tools/mkimage ${DEF_SRC_DIR}/imx-mkimage/iMX8M/mkimage_uboot
-		cd ${DEF_SRC_DIR}/imx-mkimage
-		make SOC=iMX8MN dtbs="${UBOOT_DTB}" ${IMXBOOT_TARGETS}
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-	elif [ "${MACHINE}" = "imx8qm-var-som" ]; then
-		# scfw
-		make_imx_sc_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QM/"
-		# imx-atf
-		cd ${DEF_SRC_DIR}/imx-atf
-		LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-				PLAT=imx8qm bl31
-		cd -
-		cp ${DEF_SRC_DIR}/imx-atf/build/imx8qm/release/bl31.bin \
-			src/imx-mkimage/iMX8QM/bl31.bin
-		# imx-seco
-		make_imx_seco_fw "${DEF_SRC_DIR}/imx-mkimage/iMX8QM/"
-
-		cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QM/
-		cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8QM/
-		cd ${DEF_SRC_DIR}/imx-mkimage
-		make SOC=iMX8QM flash_spl
-		cp ${DEF_SRC_DIR}/imx-mkimage/iMX8QM/flash.bin \
-			${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
-		cp ${1}/tools/env/fw_printenv ${2}
-	elif [ "${MACHINE}" = "imx6ul-var-dart" ] ||
-	     [ "${MACHINE}" = "var-som-mx7" ]; then
-		mv ${2}/fw_printenv ${2}/fw_printenv-mmc
-		#copy MMC SPL, u-boot, SPL binaries
-		cp ${1}/SPL ${2}/${G_SPL_NAME_FOR_EMMC}
-		cp ${1}/u-boot.img  ${2}/${G_UBOOT_NAME_FOR_EMMC}
-
-		# make nand make NAND U-Boot
-		pr_info "Make SPL & u-boot: ${G_UBOOT_DEF_CONFIG_NAND}"
-		# clean work directory
-		make ARCH=arm -C ${1} \
-			CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-			${G_CROSS_COMPILER_JOPTION} mrproper
-
-		# make uboot config for nand
-		make ARCH=arm -C ${1} \
-			CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-			 ${G_CROSS_COMPILER_JOPTION} ${G_UBOOT_DEF_CONFIG_NAND}
-
-		# make uboot
-		make ARCH=arm -C ${1} \
-			CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-			 ${G_CROSS_COMPILER_JOPTION}
-
-		# make fw_printenv
-		make envtools -C ${1} \
-			CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
-			${G_CROSS_COMPILER_JOPTION}
-
-		# copy NAND SPL, u-boot binaries
-		cp ${1}/SPL ${2}/${G_SPL_NAME_FOR_NAND}
-		cp ${1}/u-boot.img ${2}/${G_UBOOT_NAME_FOR_NAND}
-		cp ${1}/tools/env/fw_printenv ${2}/fw_printenv-nand
+	cd ${DEF_SRC_DIR}/imx-atf
+	LDFLAGS="" make CROSS_COMPILE=${G_CROSS_COMPILER_PATH}/${G_CROSS_COMPILER_PREFIX} \
+			PLAT=imx8mn bl31
+	cd -
+	cp ${DEF_SRC_DIR}/imx-atf/build/imx8mn/release/bl31.bin \
+		src/imx-mkimage/iMX8M/bl31.bin
+	cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_1d_201810.bin \
+		src/imx-mkimage/iMX8M/ddr4_imem_1d_201810.bin
+	cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_1d_201810.bin \
+		src/imx-mkimage/iMX8M/ddr4_dmem_1d_201810.bin
+	cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_imem_2d_201810.bin \
+		src/imx-mkimage/iMX8M/ddr4_imem_2d_201810.bin
+	cp ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/ddr4_dmem_2d_201810.bin \
+		src/imx-mkimage/iMX8M/ddr4_dmem_2d_201810.bin
+	cp ${1}/u-boot.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
+	cp ${1}/u-boot-nodtb.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
+	cp ${1}/spl/u-boot-spl.bin ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
+	cp ${1}/arch/arm/dts/${UBOOT_DTB} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
+	if [ ! -z "${UBOOT_DTB_EXTRA}" ]; then
+		cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
 	fi
+	if [ ! -z "${UBOOT_DTB_EXTRA2}" ]; then
+		cp ${1}/arch/arm/dts/${UBOOT_DTB_EXTRA2} ${DEF_SRC_DIR}/imx-mkimage/iMX8M/
+	fi
+	cp ${1}/tools/mkimage ${DEF_SRC_DIR}/imx-mkimage/iMX8M/mkimage_uboot
+	cd ${DEF_SRC_DIR}/imx-mkimage
+	make SOC=iMX8MN dtbs="${UBOOT_DTB}" ${IMXBOOT_TARGETS}
+	cp ${DEF_SRC_DIR}/imx-mkimage/iMX8M/flash.bin \
+		${DEF_SRC_DIR}/imx-mkimage/${G_UBOOT_NAME_FOR_EMMC}
+	cp ${G_UBOOT_NAME_FOR_EMMC} ${2}/${G_UBOOT_NAME_FOR_EMMC}
 }
 
 # make *.ubi image from rootfs
@@ -979,24 +773,6 @@ function cmd_make_deploy()
 			patch -p1 < ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/imx-boot/imx-mkimage-imx8m-soc.mak-add-var-som-imx8m-nano-support.patch
 			cd -
 		fi
-		# patch IMX boot for imx8mm-var-dart
-		if [ "${MACHINE}" = "imx8mm-var-dart" ]; then
-			cd ${G_IMXBOOT_SRC_DIR}
-			patch -p1 < ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/imx-boot/imx-mkimage-imx8m-soc.mak-add-variscite-imx8mm-suppo.patch
-			cd -
-		fi
-		# patch IMX boot for imx8mq-var-dart
-		if [ "${MACHINE}" = "imx8mq-var-dart" ]; then
-			cd ${G_IMXBOOT_SRC_DIR}
-			patch -p1 < ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/imx-boot/imx-mkimage-imx8m-soc.mak-add-dart-mx8m-support.patch
-			cd -
-		fi
-		# patch IMX boot for imx8mp-var-dart
-		if [ "${MACHINE}" = "imx8mp-var-dart" ]; then
-			cd ${G_IMXBOOT_SRC_DIR}
-			patch -p1 < ${G_VARISCITE_PATH}/${MACHINE}/imx-boot-tools/imx-boot/imx-mkimage-imx8m-soc.mak-add-dart-imx8mp-support.patch
-			cd -
-		fi
 		};
 	fi
 
@@ -1006,18 +782,6 @@ function cmd_make_deploy()
 			pr_info "Get IMX ATF repository";
 			get_git_src ${G_IMX_ATF_GIT} ${G_IMX_ATF_BRANCH} \
 			${G_IMX_ATF_SRC_DIR} ${G_IMX_ATF_REV}
-		};
-	fi
-
-	# SDMA firmware
-	if [ "${MACHINE}" = "imx6ul-var-dart" ] ||
-	   [ "${MACHINE}" = "var-som-mx7" ]; then
-		# get linux-firmware source repository
-		(( `ls ${G_IMX_SDMA_FW_SRC_DIR}  2>/dev/null | wc -l` == 0 )) && {
-			pr_info "Get Linux-Firmware";
-			get_git_src ${G_IMX_SDMA_FW_GIT} \
-				${G_IMX_SDMA_FW_GIT_BRANCH} ${G_IMX_SDMA_FW_SRC_DIR} \
-				${G_IMX_SDMA_FW_GIT_REV}
 		};
 	fi
 
@@ -1051,42 +815,14 @@ function cmd_make_rootfs()
 {
 	make_prepare;
 
-	if [ "${MACHINE}" = "imx6ul-var-dart" ] ||
-	   [ "${MACHINE}" = "var-som-mx7" ]; then
-		# make debian console rootfs
-		cd ${G_ROOTFS_DIR}
-		make_debian_console_rootfs ${G_ROOTFS_DIR}
-		# make imx sdma firmware
-		make_imx_sdma_fw ${G_IMX_SDMA_FW_SRC_DIR} ${G_ROOTFS_DIR}
-		cd -
-	else
-		# make debian weston backend rootfs for imx8 family
-		cd ${G_ROOTFS_DIR}
-		make_debian_weston_rootfs ${G_ROOTFS_DIR}
-		cd -
-	fi
+	# make debian weston backend rootfs for imx8 family
+	cd ${G_ROOTFS_DIR}
+	make_debian_weston_rootfs ${G_ROOTFS_DIR}
+	cd -
 
 	# make bcm firmwares
 	if [ ! -z "${G_BCM_FW_GIT}" ]; then
 		make_bcm_fw ${G_BCM_FW_SRC_DIR} ${G_ROOTFS_DIR}
-	fi
-
-	if [ "${MACHINE}" = "imx6ul-var-dart" ] ||
-	   [ "${MACHINE}" = "var-som-mx7" ]; then
-		# pack to ubi
-		make_ubi ${G_ROOTFS_DIR} ${G_TMP_DIR} ${PARAM_OUTPUT_DIR} \
-				${G_UBI_FILE_NAME}
-		# pack console rootfs
-		make_tarball ${UBIFS_ROOTFS_DIR} ${G_CONSOLE_ROOTFS_TARBALL_PATH}
-		rm -rf ${UBIFS_ROOTFS_DIR}
-	fi
-
-	if [ "${MACHINE}" = "imx6ul-var-dart" ] ||
-	   [ "${MACHINE}" = "var-som-mx7" ]; then
-		# make debian x11 backend rootfs
-		cd ${G_ROOTFS_DIR}
-		make_debian_x11_rootfs ${G_ROOTFS_DIR}
-		cd -
 	fi
 
 	# pack full rootfs
