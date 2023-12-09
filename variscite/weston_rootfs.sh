@@ -764,7 +764,6 @@ EOF
 	install -m 0644 ${G_VARISCITE_PATH}/issue.net ${ROOTFS_BASE}/etc/
 	install -m 0755 ${G_VARISCITE_PATH}/rc.local ${ROOTFS_BASE}/etc/
 	install -d ${ROOTFS_BASE}/boot/
-	install -m 0644 ${G_VARISCITE_PATH}/splash.bmp ${ROOTFS_BASE}/boot/
 	cp ${PARAM_OUTPUT_DIR}/Image.gz ${ROOTFS_BASE}/boot
 	cp ${PARAM_OUTPUT_DIR}/*.dtb ${ROOTFS_BASE}/boot
 	if [ "$DEFAULT_BOOT_DTB" != "$BOOT_DTB" ]; then
