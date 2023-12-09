@@ -10,17 +10,11 @@ readonly G_UBOOT_NAME_FOR_EMMC='imx-boot-sd.bin'
 
 # Linux kernel
 readonly G_LINUX_KERNEL_SRC_DIR="${DEF_SRC_DIR}/kernel"
-readonly G_LINUX_KERNEL_GIT="https://github.com/varigit/linux-imx.git"
+readonly G_LINUX_KERNEL_GIT="https://github.com/FFFuego/linux-variscite-fika"
 readonly G_LINUX_KERNEL_BRANCH="5.4-2.1.x-imx_var01"
-readonly G_LINUX_KERNEL_REV="c19da14f4040d6c3f60ab8d97c763262f7b42787"
-readonly G_LINUX_KERNEL_DEF_CONFIG='imx8_var_defconfig'
-G_LINUX_DTB="freescale/imx8mn-var-som-symphony.dtb
-	freescale/imx8mn-var-som-symphony-root.dtb
-	freescale/imx8mn-var-som-symphony-m7.dtb
-	freescale/imx8mn-var-som-symphony-legacy.dtb
-	freescale/imx8mn-var-som-symphony-legacy-root.dtb
-	freescale/imx8mn-var-som-symphony-legacy-m7.dtb
-	freescale/imx8mn-var-som-inmate.dtb"
+readonly G_LINUX_KERNEL_REV="HEAD"
+readonly G_LINUX_KERNEL_DEF_CONFIG='imx8_var_meticulous_defconfig'
+G_LINUX_DTB="freescale/imx8mn-var-som-symphony.dtb"
 
 # Broadcom BT/WIFI firmware
 readonly G_BCM_FW_SRC_DIR="${DEF_SRC_DIR}/bcmfw"
@@ -68,7 +62,7 @@ IMX_BOOT_TOOL_BL_BIN="bl31-imx8mn.bin"
 IMXBOOT_TARGETS="flash_ddr4_evk"
 
 # default mirror
-readonly DEF_DEBIAN_MIRROR="https://snapshot.debian.org/archive/debian/20211215T150219Z/"
+readonly DEF_DEBIAN_MIRROR="http://deb.debian.org/debian"
 
 #freertos-variscite
 readonly G_FREERTOS_VAR_SRC_DIR="${DEF_SRC_DIR}/freertos-variscite"
