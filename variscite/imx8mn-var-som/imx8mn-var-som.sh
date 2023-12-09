@@ -3,18 +3,18 @@ readonly ARCH_CPU="64BIT"
 # U-Boot
 readonly G_UBOOT_SRC_DIR="${DEF_SRC_DIR}/uboot"
 readonly G_UBOOT_GIT="https://github.com/FFFuego/uboot-variscite-fika"
-readonly G_UBOOT_BRANCH="v2020.04-imx-debian-5.15"
+readonly G_UBOOT_BRANCH="v2022.04-imx-debian-5.15"
 readonly G_UBOOT_REV="HEAD"
-readonly G_UBOOT_DEF_CONFIG_MMC="imx8_var_meticulous_defconfig"
+readonly G_UBOOT_DEF_CONFIG_MMC="imx8mn_var_som_defconfig"
 readonly G_UBOOT_NAME_FOR_EMMC='imx-boot-sd.bin'
 
 # Linux kernel
 readonly G_LINUX_KERNEL_SRC_DIR="${DEF_SRC_DIR}/kernel"
 readonly G_LINUX_KERNEL_GIT="https://github.com/FFFuego/linux-variscite-fika"
-readonly G_LINUX_KERNEL_BRANCH="5.4-2.1.x-imx_var01"
+readonly G_LINUX_KERNEL_BRANCH="debian-5.15.60"
 readonly G_LINUX_KERNEL_REV="HEAD"
 readonly G_LINUX_KERNEL_DEF_CONFIG='imx8_var_meticulous_defconfig'
-G_LINUX_DTB="freescale/imx8mn-var-som-symphony.dtb"
+readonly G_LINUX_DTB="freescale/imx8mn-var-som-symphony.dtb"
 
 # Broadcom BT/WIFI firmware
 readonly G_BCM_FW_SRC_DIR="${DEF_SRC_DIR}/bcmfw"
@@ -70,14 +70,7 @@ readonly G_FREERTOS_VAR_SRC_GIT="https://github.com/varigit/freertos-variscite.g
 readonly G_FREERTOS_VAR_SRC_BRANCH="mcuxpresso_sdk_2.11.x-var01"
 readonly G_FREERTOS_VAR_SRC_REV="400b111535768f7aad0b25d29b09b8a9b352cd5f"
 readonly CM_BOARD="som_mx8mn"
-readonly CM_DEMOS=" \
-	multicore_examples/rpmsg_lite_str_echo_rtos \
-	multicore_examples/rpmsg_lite_pingpong_rtos/linux_remote \
-	demo_apps/hello_world \
-	multicore_examples/rpmsg_lite_str_echo_rtos \
-	multicore_examples/rpmsg_lite_pingpong_rtos/linux_remote \
-	demo_apps/hello_world \
-"
+readonly CM_DEMOS=""
 readonly G_CM_GCC_NAME="gcc-arm-none-eabi-10.3-2021.07"
 #
 # To avoid scfw compilation errors the Cortex-M gcc toolchain is unpacked in specific folder (G_CM_GCC_OUT_DIR)
