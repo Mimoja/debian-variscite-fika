@@ -718,6 +718,13 @@ EOF
 			${ROOTFS_BASE}/etc/pm/sleep.d/
 	fi
 
+	# install meticulous services
+
+	install -m 0644 ${G_VARISCITE_PATH}/meticulous-ui.service \
+		${ROOTFS_BASE}/lib/systemd/system
+	ln -s /lib/systemd/system/meticulous-ui.service \
+		${ROOTFS_BASE}/etc/systemd/system/multi-user.target.wants/meticulous-ui.service
+
 	# we don't want systemd to handle the power key
 	echo "HandlePowerKey=ignore" >> ${ROOTFS_BASE}/etc/systemd/logind.conf
 
