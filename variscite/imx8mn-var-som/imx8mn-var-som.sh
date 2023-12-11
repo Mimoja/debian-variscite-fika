@@ -5,7 +5,7 @@ readonly G_UBOOT_SRC_DIR="${DEF_SRC_DIR}/uboot"
 readonly G_UBOOT_GIT="https://github.com/FFFuego/uboot-variscite-fika"
 readonly G_UBOOT_BRANCH="v2022.04-imx-debian-5.15"
 readonly G_UBOOT_REV="HEAD"
-readonly G_UBOOT_DEF_CONFIG_MMC="imx8mn_var_som_defconfig"
+readonly G_UBOOT_DEF_CONFIG_MMC="imx8mn_var_som_meticulous_defconfig"
 readonly G_UBOOT_NAME_FOR_EMMC='imx-boot-sd.bin'
 
 # Linux kernel
