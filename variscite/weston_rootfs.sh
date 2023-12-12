@@ -166,8 +166,18 @@ function make_debian_weston_rootfs()
 	fi
 
 # add mirror to source list
-echo "deb ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE} main contrib non-free
+echo "
+deb ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE} main contrib non-free
 deb-src ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE} main contrib non-free
+
+deb ${DEF_DEBIAN_MIRROR}-security ${DEB_RELEASE}-security main contrib non-free
+deb-src ${DEF_DEBIAN_MIRROR}-security ${DEB_RELEASE}-security main contrib non-free
+
+deb ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE}-updates main contrib non-free
+deb-src ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE}-updates main contrib non-free
+
+deb ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE}-backports main contrib non-free
+deb-src ${DEF_DEBIAN_MIRROR} ${DEB_RELEASE}-backports main contrib non-free
 " > etc/apt/sources.list
 
 # maximize local repo priority
@@ -724,6 +734,10 @@ EOF
 		${ROOTFS_BASE}/lib/systemd/system
 	ln -s /lib/systemd/system/meticulous-ui.service \
 		${ROOTFS_BASE}/etc/systemd/system/multi-user.target.wants/meticulous-ui.service
+
+
+	# install python
+	tar xf ${G_VARISCITE_PATH}/python/python3.12.tar.gz -C ${ROOTFS_BASE}
 
 	# we don't want systemd to handle the power key
 	echo "HandlePowerKey=ignore" >> ${ROOTFS_BASE}/etc/systemd/logind.conf
